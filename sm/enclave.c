@@ -120,11 +120,37 @@ static void context_switch_to_host(uintptr_t* encl_regs,
 
   // set PMP
   int memid;
-  for(memid=0; memid < ENCLAVE_REGIONS_MAX; memid++) {
-    if(enclaves[eid].regions[memid].type != REGION_INVALID) {
-      pmp_set(enclaves[eid].regions[memid].pmp_rid, PMP_NO_PERM);
-    }
+  // for(memid=0; memid < ENCLAVE_REGIONS_MAX; memid++) {
+  //   if(enclaves[eid].regions[memid].type != REGION_INVALID) {
+  //     pmp_set(enclaves[eid].regions[memid].pmp_rid, PMP_NO_PERM);
+  //   }
+  // }
+  if(enclaves[eid].regions[0].type != REGION_INVALID) {
+    pmp_set(enclaves[eid].regions[0].pmp_rid, PMP_NO_PERM);
   }
+  if(enclaves[eid].regions[1].type != REGION_INVALID) {
+    pmp_set(enclaves[eid].regions[1].pmp_rid, PMP_NO_PERM);
+  }
+  if(enclaves[eid].regions[2].type != REGION_INVALID) {
+    pmp_set(enclaves[eid].regions[2].pmp_rid, PMP_NO_PERM);
+  }
+  if(enclaves[eid].regions[3].type != REGION_INVALID) {
+    pmp_set(enclaves[eid].regions[3].pmp_rid, PMP_NO_PERM);
+  }
+  if(enclaves[eid].regions[4].type != REGION_INVALID) {
+    pmp_set(enclaves[eid].regions[4].pmp_rid, PMP_NO_PERM);
+  }
+  if(enclaves[eid].regions[5].type != REGION_INVALID) {
+    pmp_set(enclaves[eid].regions[5].pmp_rid, PMP_NO_PERM);
+  }
+  if(enclaves[eid].regions[6].type != REGION_INVALID) {
+    pmp_set(enclaves[eid].regions[6].pmp_rid, PMP_NO_PERM);
+  }
+  if(enclaves[eid].regions[7].type != REGION_INVALID) {
+    pmp_set(enclaves[eid].regions[7].pmp_rid, PMP_NO_PERM);
+  }
+ 
+
   osm_pmp_set(PMP_ALL_PERM);
 
   uintptr_t interrupts = MIP_SSIP | MIP_STIP | MIP_SEIP;
@@ -607,14 +633,14 @@ enclave_ret_code exit_enclave(uintptr_t* encl_regs, unsigned long retval, enclav
 {
   int exitable;
 
-  spinlock_lock(&encl_lock);
+  //spinlock_lock(&encl_lock);
   exitable = enclaves[eid].state == RUNNING;
   if (exitable) {
     enclaves[eid].n_thread--;
     if(enclaves[eid].n_thread == 0)
       enclaves[eid].state = STOPPED;
   }
-  spinlock_unlock(&encl_lock);
+  //spinlock_unlock(&encl_lock);
 
   if(!exitable)
     return ENCLAVE_NOT_RUNNING;
@@ -656,18 +682,18 @@ enclave_ret_code resume_enclave(uintptr_t* host_regs, enclave_id eid)
 {
   int resumable;
 
-  spinlock_lock(&encl_lock);
+  // spinlock_lock(&encl_lock);
   resumable = (ENCLAVE_EXISTS(eid)
                && (enclaves[eid].state == RUNNING || enclaves[eid].state == STOPPED)
                && enclaves[eid].n_thread < MAX_ENCL_THREADS);
   if(!resumable) {
-    spinlock_unlock(&encl_lock);
+    //spinlock_unlock(&encl_lock);
     return ENCLAVE_NOT_RESUMABLE;
   } else {
     enclaves[eid].n_thread++;
     enclaves[eid].state = RUNNING;
   }
-  spinlock_unlock(&encl_lock);
+  //spinlock_unlock(&encl_lock);
 
   // Enclave is OK to resume, context switch to it
   return context_switch_to_enclave(host_regs, eid, 0);
